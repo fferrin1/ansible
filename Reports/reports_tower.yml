@@ -8,7 +8,6 @@
     email_host: mail.example.com
     email_from: user1@example.com
     emails:
-#    email_to: francisco.ferrin@kyndryl.com
     ccemails:
 
     #random settings
