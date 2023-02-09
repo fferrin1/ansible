@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  tasks:
+  - name: vmware upgrade and reboot
+    include_vars:
+      file: secrets
+
+  - name: Reading the csv file
+    read_csv:
+      path: vm_list.csv
+    register: vm_list
+    delegate_to: localhost
+
+
+  - name: display vm_list data
+    debug:
+      var: vm_list.list
+
+  - name: extraer item
+    debug:
+      msg: "{{ item.hostname }}"
+    loop:  "{{ vm_list.list}}"
+
+  - name: upgrade hw-tools
+    vmware.vmware_rest.vcenter_vm_hardware:
+      vcenter_hostname: "{{ vcenter_hostname }}"
+      vcenter_username: "{{ vcenter_username }}"
+      vcenter_password: "{{ vcenter_password }}"
+      #      datacenter: "{{ datacenter_name }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs }}"
+      upgrade_policy: AFTER_CLEAN_SHUTDOWN
+      upgrade_version: VMX_19
+      vm: "{{ item.id }}"
+      state: present
+    delegate_to: localhost
+    loop: "{{ vm_list.list}}"
+
+
+
+  - name: Wait for the virtual machine to shutdown reboot
+    community.vmware.vmware_guest_powerstate:
+       hostname: "{{ vcenter_hostname }}"
+       username: "{{ vcenter_username }}"
+       password: "{{ vcenter_password }}"
+       validate_certs: false
+       name: "{{ item.hostname }}"
+       state: reboot-guest
+       state_change_timeout: 40
+    delegate_to: localhost
+    register: deploy
+    loop: "{{ vm_list.list}}"
