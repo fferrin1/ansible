@@ -1,0 +1,12 @@
+[ipaserver]
+10.10.10.20
+
+[ipaserver:vars]
+server_hostname=idm1.example.local
+domain=example.local
+realm=EXAMPLE.LOCAL
+firewall_zone=public
+ipa_user=admin
+ipa_user_password=Y0URP4ASSW0RD
+manager_password=Y0URP4ASSW0RD
+reenvio_dns=1.1.1.1
