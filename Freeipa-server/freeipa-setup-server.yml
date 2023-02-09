@@ -1,0 +1,74 @@
+- hosts: ipaserver
+  remote_user: root
+  tasks:
+
+  - name: setenforce in 0
+    command: setenforce 0
+
+  - name:  selinux permissive
+    command: sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+
+  - name: zdefining the host
+    hostname:
+      name: "{{ server_hostname }}"
+      use: systemd
+    when: ansible_os_family in ['RedHat', 'Rocky']
+
+
+  - name: editing the hosts file
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ ansible_host }}   {{ server_hostname }}"
+
+  - name: activation of the module with IPA
+    command: dnf module enable idm:DL1 -y
+    args:
+      warn: false
+
+  - name: distro-sync
+    command: dnf distro-sync -y
+    args:
+      warn: false
+
+  - name: installation of IPA server packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - ipa-server
+      - ipa-server-dns
+      - bind-dyndb-ldap
+
+  - name: firewalld installation
+    yum:
+      name: firewalld
+      state: present
+
+  - block:
+    - name: firewalld launch
+      systemd:
+        name: firewalld
+        enabled: yes
+        state: started
+
+  - name: launching the IPA installer
+    command: ipa-server-install -U --hostname={{ server_hostname }} --domain={{ domain }} --realm={{ realm }} --ds-password={{ manager_password }} --admin-password={{ ipa_user_password }} --setup-dns --auto-reverse --forwarder={{reenvio_dns }}
+
+  - name: update of the IPA server
+    command: ipa-server-upgrade
+
+  - name: opening the required ports
+    firewalld:
+      zone: "{{ firewall_zone }}"
+      service: "{{ item }}"
+      immediate: true
+      permanent: true
+      state: enabled
+    loop:
+      - dns
+      - https
+      - http
+      - ntp
+      - freeipa-ldap
+      - freeipa-ldaps
