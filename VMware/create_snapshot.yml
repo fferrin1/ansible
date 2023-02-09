@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  tasks:
+  - name: Create a snapshot
+    include_vars:
+      file: secrets
+  - name: crear snapshot 1
+    community.vmware.vmware_guest_snapshot:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ datacenter_name }}"
+      validate_certs: "{{ vcenter_validate_certs }}"
+      folder: "/{{ datacenter_name }}/vm/"
+      name: "{{ item.name }}"
+      state: present
+      snapshot_name: your_name_snapthot
+      description: description_example_prd
+      memory_dump: false
+    delegate_to: localhost
+    with_items:
+      - { name: 'vmhostname1'}
+      - { name: 'vmhostname2'}
+      - { name: 'vmhostname3'}
+      - { name: 'vmhostname4'}
+      - { name: 'vmhostname5'}
+      - { name: 'vmhostname112'}
+      - { name: 'vmhostname113'}
+      - { name: 'vmhostname24'}
+     
+
