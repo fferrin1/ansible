@@ -1,4 +1,4 @@
-- hosts: ipaserver
+- hosts: ldapserver2
   remote_user: root
   tasks:
 
