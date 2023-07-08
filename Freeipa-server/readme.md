@@ -1,1 +1,1 @@
-install config freeipa server in rhel 8 or rocky linux
+install config freeipa server in rhel centos 8 almalinux  or rocky linux
